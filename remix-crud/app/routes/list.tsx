@@ -7,15 +7,13 @@ import {
   useTransition,
 } from 'remix';
 
-import { db } from '~/utils/db.server';
-import { randomDelay } from '~/utils/delay';
-
+import type { ShoppingItemProps } from '~/@types/ShoppingItem';
 import { ShoppingItem } from '~/components/ShoppingItem';
 
-import { ShoppingItemProps } from '~/@types/ShoppingItem';
+import { db } from '~/utils/fakeDb.server';
 
 export const loader: LoaderFunction = async () => {
-  return await db.shoppingItems.findMany();
+  return await db.findMany();
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -26,29 +24,19 @@ export const action: ActionFunction = async ({ request }) => {
 
   switch (_action) {
     case 'create': {
-      // Random delay to simulate real world
-      await randomDelay();
-
       const name = String(body.get('name'));
       const price = Number(body.get('price'));
-      const item = { name, price };
+      const id = name;
+      const item = { id, name, price };
 
-      return await db.shoppingItems.create({
-        data: item,
-      });
+      return await db.create(item);
     }
 
     case 'delete': {
-      // Random delay to simulate real world
-      await randomDelay();
-
       try {
-        // Random problem chance
-        if (Math.random() > 0.8) throw new Error('Deleting...KABOOM!');
-
         const id = String(body.get('itemId'));
 
-        return await db.shoppingItems.delete({ where: { id } });
+        return await db.delete(id);
       } catch (error) {
         return { error: true };
       }
@@ -76,10 +64,10 @@ export default function List() {
   }, [isAdding]);
 
   return (
-    <div>
-      <h2>Shopping List:</h2>
+    <div className='p-4'>
+      <h1 className='font-bold text-lg'>Shopping List:</h1>
 
-      <ul>
+      <ul className='flex flex-col gap-2 justify-center items-end w-1/4 border-2 rounded-md'>
         {data.map((item) => (
           <ShoppingItem key={item.id} item={item} />
         ))}
@@ -97,10 +85,27 @@ export default function List() {
         )}
       </ul>
 
-      <Form replace method='post' ref={formRef}>
-        <input type='text' name='name' placeholder='Item name' ref={inputRef} />{' '}
-        <input type='number' name='price' placeholder='Price' step='any' />{' '}
-        <button name='_action' value='create' disabled={isAdding}>
+      <Form replace method='post' ref={formRef} className='flex gap-2 w-1/3'>
+        <input
+          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+          type='text'
+          name='name'
+          placeholder='Item name'
+          ref={inputRef}
+        />
+        <input
+          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+          type='number'
+          name='price'
+          placeholder='Price'
+          step='0.01'
+        />
+        <button
+          className='bg-transparent hover:bg-stone-500 text-stone-700 font-semibold hover:text-white ml-2 px-2 border border-stone-500 hover:border-transparent rounded'
+          name='_action'
+          value='create'
+          disabled={isAdding}
+        >
           {isAdding ? 'Adding...' : 'Add'}
         </button>
       </Form>

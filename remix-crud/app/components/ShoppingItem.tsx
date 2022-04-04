@@ -13,7 +13,7 @@ export function ShoppingItem({
 
   const isDeleting = fetcher.submission?.formData.get('itemId') === item.id;
 
-  const isFailedDeletion = fetcher.data?.error; // since Try/Catch returns { error: true } on list.tsx
+  const isFailedDeletion = fetcher.data?.error;
 
   return (
     <li
@@ -27,6 +27,7 @@ export function ShoppingItem({
       <fetcher.Form replace method='post' style={{ display: 'inline-block' }}>
         <input type='hidden' name='itemId' value={item.id} />
         <button
+          className='border-2 font-bold hover:brightness-75'
           disabled={isOptimistic}
           name='_action'
           value='delete'
@@ -39,6 +40,7 @@ export function ShoppingItem({
           {isFailedDeletion ? 'Retry' : '✖'}
         </button>
       </fetcher.Form>
+      <span>{isFailedDeletion && isFailedDeletion}</span>
     </li>
   );
 }
